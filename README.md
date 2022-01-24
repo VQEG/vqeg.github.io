@@ -30,19 +30,9 @@ bundle update
 
 This will install, among others, security updates. After updating,  Then, commit and push the `Gemfile` and `Gemfile.lock`.
 
-## Checking Links
-
-Install [GNU Parallel](https://www.gnu.org/software/parallel/) and run:
-
-```
-grep -hriE '(external_link:|direct_download_link:)' _posts/*.md | cut -d ":" -f2- | parallel --trim l --timeout 5 "curl -L -o /dev/null --silent --head --write-out '%{url_effective} %{http_code}\n' {}" 2>/dev/null | grep -v 200
-```
-
-This will print all non-200 links, which includes broken links or other errors. FTP is currently not supported.
-
 ## License
 
-Copyright 2018 Werner Robitza
+Copyright 2022 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
