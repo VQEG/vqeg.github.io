@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VQEG – Software &amp; Tools</title>
+    <meta name="description" content="VQEG open source software tools for video quality assessment and subjective testing.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vqeg-red: rgb(214, 62, 4);
+            --vqeg-blue: rgb(0, 51, 102);
+            --vqeg-blue-light: rgb(0, 71, 142);
+            --vqeg-gray-light: #f5f7fa;
+            --vqeg-gray: #e8edf2;
+            --vqeg-text: #333;
+            --vqeg-text-muted: #666;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Open Sans", sans-serif;
+            color: var(--vqeg-text);
+            line-height: 1.6;
+            background: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a {
+            color: var(--vqeg-blue);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--vqeg-red);
+        }
+
+        /* Header */
+        .header {
+            background: var(--vqeg-blue);
+            color: #fff;
+            padding: 2rem 2rem 3rem;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            margin-bottom: 1.25rem;
+        }
+
+        .logo img {
+            height: 48px;
+            width: auto;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .header-links {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-links a {
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.875rem;
+            background: rgb(0, 29, 58);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-links a:hover {
+            background: rgb(0, 20, 40);
+            color: #fff;
+        }
+
+        .header-links svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            /** padding: 3rem 2rem; */
+            padding-top: 3rem;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--vqeg-blue);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--vqeg-red);
+            display: inline-block;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        /* Resource List */
+        .resource-list {
+            list-style: none;
+        }
+
+        .resource-list li {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--vqeg-gray);
+        }
+
+        .resource-list li:last-child {
+            border-bottom: none;
+        }
+
+        .resource-list a {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .resource-list p {
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: var(--vqeg-text-muted);
+        }
+
+        .resource-list .links {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .resource-list .links a {
+            font-weight: 400;
+            margin-right: 1rem;
+        }
+
+        .resource-list .links a::before {
+            content: '→ ';
+            color: var(--vqeg-red);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--vqeg-gray-light);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--vqeg-text-muted);
+        }
+
+        .footer a {
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header {
+                padding: 1.5rem 1.5rem 2rem;
+            }
+
+            main {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <img src="https://vqeg.org/assets/VQEG-logo.svg" alt="VQEG – Video Quality Experts Group">
+            </div>
+            <p>Open source software tools for video quality assessment, subjective testing, and streaming simulation.</p>
+            <div class="header-links">
+                <a target="_blank" href="https://www.vqeg.org">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    Main VQEG Website
+                </a>
+                <a target="_blank" href="https://github.com/VQEG">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    VQEG on GitHub
+                </a>
+                <a target="_blank" href="https://www.linkedin.com/company/vqeg-video-quality-experts-group">
+                    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    VQEG on LinkedIn
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h2 class="section-title">Software Tools</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://vqeg.github.io/software-tools">Software Tools and Labs Setup</a>
+                    <p>A collection of software to prepare, conduct, and analyze subjective tests.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/VQEG/number-of-subjects">Number of Subjects Calculator</a>
+                    <p>Calculate the required number of subjects for subjective quality tests.</p>
+                    <div class="links">
+                        <a href="https://vqeg.github.io/number-of-subjects/">Web App</a>
+                        <a href="https://github.com/VQEG/number-of-subjects">Source Code</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="https://github.com/VQEG/tpkloss">tpkloss</a>
+                    <p>Telchemy Packet Loss Insertion Tool for network impairment simulation.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/VQEG/streamsim">streamsim</a>
+                    <p>A streaming simulation toolkit for video.</p>
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="section-title">Standardization</h2>
+            <ul class="resource-list">
+                <li>
+                    <a href="https://github.com/VQEG/t35-quality-metadata">T.35 Quality Metadata</a>
+                    <p>Specification and registration for ITU-T T.35 quality metadata.</p>
+                </li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <a href="https://www.vqeg.org">VQEG</a> – Advancing video quality research since 1997
+    </footer>
+</body>
+</html>

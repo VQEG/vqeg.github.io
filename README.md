@@ -6,29 +6,15 @@ Go to [https://vqeg.github.io/](https://vqeg.github.io/) to view the site.
 
 ## Development
 
-Install Ruby (2.7, 3.x is not supported), then in this directory:
+This is a simple static HTML site. Just open `index.html` in a browser or use any static file server:
 
+```bash
+# Python
+python -m http.server 8000
+
+# Node.js
+npx serve
 ```
-gem install bundler
-bundle install
-bundle exec jekyll serve --config _config.yml,_config.dev.yml
-```
-
-You may also use this to trigger automatic rebuilds:
-
-```
-bundle exec jekyll serve --livereload
-```
-
-## Updating Dependencies
-
-If there are any updates needed, you can update the Gems with:
-
-```
-bundle update
-```
-
-This will install, among others, security updates. After updating,  Then, commit and push the `Gemfile` and `Gemfile.lock`.
 
 ## License
 
