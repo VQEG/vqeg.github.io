@@ -48,6 +48,8 @@ These files are small and can be kept inside Git.
 
 The multi-gigabyte meeting archive (5.7 GB as of September 2026) is intentionally excluded. Put meeting files in the designated external storage and link to them from the appropriate meeting page; do not commit that archive here.
 
+[scripts/archive-to-r2.mjs](scripts/archive-to-r2.mjs) copies the meeting and publication files linked on the site from the old vqeg.org to Cloudflare R2. See the comment at the top of the script for requirements and usage.
+
 ## Deployment
 
 GitHub Pages publishes the `master` branch through [the deployment workflow](.github/workflows/deploy.yml). The current public preview is available at `https://slhck.info/vqeg-website/`.
