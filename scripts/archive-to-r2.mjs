@@ -14,7 +14,7 @@
  *     uploads: it cannot list or check objects and uploads files only up to 300 MB.
  *   - An R2 bucket. Create it once with Wrangler (run through npx, no install needed):
  *       npx wrangler login
- *       npx wrangler r2 bucket create vqeg-archive
+ *       npx wrangler r2 bucket create vqeg-meeting-files
  *   - An R2 API token with "Object Read & Write" access to the bucket. Create it in the
  *     Cloudflare dashboard under R2 > Manage API tokens. It shows the access key ID and the
  *     secret access key. The account ID is on the R2 overview page.
@@ -42,28 +42,26 @@
  *   R2_ACCOUNT_ID         Cloudflare account ID (upload and verify only)
  *   R2_ACCESS_KEY_ID      R2 API token access key ID (upload and verify only)
  *   R2_SECRET_ACCESS_KEY  R2 API token secret access key (upload and verify only)
- *   R2_BUCKET             R2 bucket name (default: vqeg-archive)
+ *   R2_BUCKET             R2 bucket name (default: vqeg-meeting-files)
  *
  * Object keys in R2: meetings/<directory>/<filename> and publications/<directory>/<filename>,
  * with the original directory and file names.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { archiveKey, archivePages, parseQuery } from '../src/remark/rewrite-archive-urls.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const archiveDir = resolve(process.env.ARCHIVE_DIR ?? join(root, '../vqeg-archive-mirror'));
 const filesDir = join(archiveDir, 'files');
 const partsDir = join(archiveDir, 'parts');
-const bucket = process.env.R2_BUCKET ?? 'vqeg-archive';
+const bucket = process.env.R2_BUCKET ?? 'vqeg-meeting-files';
 
-// Source page and key prefix in R2
-const sources = [
-  { page: 'src/data/page/meetings.mdx', prefix: 'meetings' },
-  { page: 'src/data/page/publications-and-software.mdx', prefix: 'publications' },
-];
+// Source pages
+const sources = Object.keys(archivePages).map((name) => `src/data/page/${name}`);
 
 // Number of parallel downloads
 const concurrency = 4;
@@ -73,36 +71,23 @@ const missingBody = 'File does not exist.';
 
 const linkPattern = /\]\((https:\/\/vqeg\.org\/umbraco\/surface\/FolderList\/GetFile\?.*)\) \([0-9.]+ MB\)$/;
 
-/**
- * Split a query string without decoding "+" as a space.
- * Some file names contain a literal "+", which the old server reads as a space.
- */
-function parseQuery(url) {
-  const query = url.slice(url.indexOf('?') + 1);
-  return Object.fromEntries(
-    query.split('&').map((pair) => {
-      const index = pair.indexOf('=');
-      return index < 0 ? [pair, ''] : [pair.slice(0, index), decodeURIComponent(pair.slice(index + 1))];
-    }),
-  );
-}
-
 function readEntries() {
   const entries = new Map();
   const broken = [];
-  for (const { page, prefix } of sources) {
+  for (const page of sources) {
+    const prefix = archivePages[basename(page)];
     for (const line of readFileSync(join(root, page), 'utf8').split('\n')) {
       const match = line.match(linkPattern);
       if (!match) continue;
-      const { directory, filename, pageId } = parseQuery(match[1]);
-      if (!directory || !filename || !pageId) {
+      const key = archiveKey(match[1], prefix);
+      if (!key) {
         broken.push(match[1]);
         continue;
       }
+      const { directory, filename, pageId } = parseQuery(match[1]);
       const url =
         'https://vqeg.org/umbraco/surface/FolderList/GetFile' +
         `?directory=${encodeURIComponent(directory)}&filename=${encodeURIComponent(filename)}&pageId=${pageId}&m=3`;
-      const key = `${prefix}/${directory}/${filename}`;
       entries.set(key, { key, url });
     }
   }

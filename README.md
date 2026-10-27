@@ -58,5 +58,6 @@ The deployment location is configured with GitHub repository variables, not sour
 
 - `SITE_URL`: site origin, such as `https://slhck.info` or `https://vqeg.org`
 - `BASE_PATH`: optional path below the origin, such as `/vqeg-website`; leave empty for a root-domain deployment
+- `ARCHIVE_URL`: public base URL of the R2 bucket with the meeting and publication files, such as `https://archive.vqeg.org`; defaults to the r2.dev development URL
 
 Use the same variables when building elsewhere. Without them, local development runs at the root of `http://localhost:4321`. Do not add a `public/CNAME` file for the current preview: `slhck.info` is already configured by the account-level `slhck.github.io` Pages site.

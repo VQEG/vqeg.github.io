@@ -13,6 +13,7 @@ permissions:
 env:
   SITE_URL: ${{ vars.SITE_URL }}
   BASE_PATH: ${{ vars.BASE_PATH }}
+  ARCHIVE_URL: ${{ vars.ARCHIVE_URL }}
 
 concurrency:
   group: pages

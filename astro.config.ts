@@ -8,12 +8,15 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import compress from 'astro-compress';
 import archiveAccordions from './src/remark/archive-accordions.mjs';
+import rewriteArchiveUrls from './src/remark/rewrite-archive-urls.mjs';
 import rewriteRootUrls from './src/remark/rewrite-root-urls.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const site = process.env.SITE_URL || 'http://localhost:4321';
 const configuredBase = process.env.BASE_PATH?.trim().replace(/^\/+|\/+$/g, '');
 const base = configuredBase ? `/${configuredBase}` : undefined;
+// Public base URL of the R2 bucket with the meeting and publication files
+const archiveUrl = process.env.ARCHIVE_URL || 'https://pub-92a02ae455b849f6b7d7ef6ec43e58b9.r2.dev';
 const withBase = (pathname: string) => `${base ?? ''}${pathname}`;
 
 export default defineConfig({
@@ -22,7 +25,11 @@ export default defineConfig({
   output: 'static',
   markdown: {
     processor: unified({
-      remarkPlugins: [archiveAccordions, [rewriteRootUrls, { base: base ?? '/' }]],
+      remarkPlugins: [
+        archiveAccordions,
+        [rewriteArchiveUrls, { archiveUrl }],
+        [rewriteRootUrls, { base: base ?? '/' }],
+      ],
     }),
   },
   redirects: {
