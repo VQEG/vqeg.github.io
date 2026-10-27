@@ -23,6 +23,7 @@
  *   download  Download every linked file to ARCHIVE_DIR/files. Skip files whose local size
  *             matches the size on the old server. Write ARCHIVE_DIR/download-report.json with
  *             failed downloads, files missing on the old server, and broken links.
+ *             With --local, skip files that exist locally without checking the old server.
  *   upload    Copy ARCHIVE_DIR/files to the bucket with `rclone copy`. Skip files that are
  *             already in the bucket with the same checksum.
  *   verify    Compare size and MD5 of every local file with its copy in the bucket.
@@ -32,6 +33,7 @@
  *
  * Usage:
  *   node scripts/archive-to-r2.mjs download
+ *   node scripts/archive-to-r2.mjs download --local
  *
  *   export R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=...
  *   node scripts/archive-to-r2.mjs upload
@@ -59,6 +61,9 @@ const archiveDir = resolve(process.env.ARCHIVE_DIR ?? join(root, '../vqeg-archiv
 const filesDir = join(archiveDir, 'files');
 const partsDir = join(archiveDir, 'parts');
 const bucket = process.env.R2_BUCKET ?? 'vqeg-meeting-files';
+const args = process.argv.slice(2);
+// Skip existing local files without checking their size on the old server
+const localOnly = args.includes('--local');
 
 // Source pages
 const sources = Object.keys(archivePages).map((name) => `src/data/page/${name}`);
@@ -121,6 +126,7 @@ async function remoteSize(url) {
 async function downloadOne(entry) {
   const target = join(filesDir, entry.key);
   const part = join(partsDir, entry.key);
+  if (localOnly && existsSync(target)) return 'skipped';
   const expected = await remoteSize(entry.url);
   if (expected === null) return 'missing';
   if (sizeOf(target) === expected) return 'skipped';
@@ -211,10 +217,10 @@ function verify() {
 }
 
 const steps = { download, upload, verify };
-const command = process.argv[2] ?? 'all';
+const command = args.find((arg) => !arg.startsWith('--')) ?? 'all';
 const selected = command === 'all' ? Object.keys(steps) : [command];
 if (!selected.every((step) => step in steps)) {
-  console.error('Usage: node scripts/archive-to-r2.mjs [download|upload|verify|all]');
+  console.error('Usage: node scripts/archive-to-r2.mjs [download|upload|verify|all] [--local]');
   process.exit(2);
 }
 mkdirSync(filesDir, { recursive: true });
