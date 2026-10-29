@@ -52,12 +52,25 @@ The multi-gigabyte meeting archive (5.7 GB as of September 2026) is intentionall
 
 ## Deployment
 
-GitHub Pages publishes the `master` branch through [the deployment workflow](.github/workflows/deploy.yml). The current public preview is available at `https://slhck.info/vqeg-website/`.
+This repository is the organization Pages site of the [VQEG GitHub organization](https://github.com/VQEG). GitHub Pages publishes the `master` branch through [the deployment workflow](.github/workflows/deploy.yml) at `https://vqeg.github.io/`.
 
 The deployment location is configured with GitHub repository variables, not source code:
 
-- `SITE_URL`: site origin, such as `https://slhck.info` or `https://vqeg.org`
-- `BASE_PATH`: optional path below the origin, such as `/vqeg-website`; leave empty for a root-domain deployment
+- `SITE_URL`: site origin, currently `https://vqeg.github.io`, later `https://vqeg.org`
+- `BASE_PATH`: optional path below the origin; leave it unset for a root-domain deployment
 - `ARCHIVE_URL`: public base URL of the R2 bucket with the meeting and publication files, such as `https://archive.vqeg.org`; defaults to the r2.dev development URL
 
-Use the same variables when building elsewhere. Without them, local development runs at the root of `http://localhost:4321`. Do not add a `public/CNAME` file for the current preview: `slhck.info` is already configured by the account-level `slhck.github.io` Pages site.
+Use the same variables when building elsewhere. Without them, local development runs at the root of `http://localhost:4321`.
+
+The project sites of other VQEG repositories, such as `/software-tools/`, `/doi/` and `/number-of-subjects/`, are served under the same domain. Do not create pages at these paths, and link to them with root-relative URLs. They do not exist on the local development server.
+
+### Switching to vqeg.org
+
+The domain `vqeg.org` is verified for the VQEG organization in the [organization Pages settings](https://github.com/organizations/VQEG/settings/pages). To switch the site to `vqeg.org`:
+
+1. Point the DNS records to GitHub Pages: `A` records for `vqeg.org` to `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`, `AAAA` records to `2606:50c0:8000::153` to `2606:50c0:8003::153`, and a `CNAME` record for `www.vqeg.org` to `vqeg.github.io`. The records must not be proxied.
+2. Set `vqeg.org` as the custom domain in the [repository Pages settings](https://github.com/VQEG/vqeg.github.io/settings/pages). Do not add a `public/CNAME` file; the deployment workflow does not use it.
+3. Set the `SITE_URL` variable to `https://vqeg.org` and run the deployment workflow again.
+4. Enable "Enforce HTTPS" once GitHub has issued the certificate.
+
+After the switch, the `vqeg.github.io` URLs, including those of the project sites, redirect to `vqeg.org`.
