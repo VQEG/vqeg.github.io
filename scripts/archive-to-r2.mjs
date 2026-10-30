@@ -1,35 +1,36 @@
 #!/usr/bin/env node
 
 /**
- * Copy the meeting and publication files from the old vqeg.org (Umbraco) to Cloudflare R2.
+ * Copy the meeting and publication files to Cloudflare R2 and check the archive links on the
+ * website against the bucket.
  *
- * The file list comes from the download links in src/data/page/meetings.mdx and
- * src/data/page/publications-and-software.mdx. Files are downloaded to a local
- * mirror first, then copied to R2 with rclone. Every step can be re-run: files
- * that are already complete are skipped.
+ * The file list comes from the archive: links in src/data/page. The download step gets the
+ * files from the old vqeg.org (Umbraco) to a local mirror, the upload step copies the mirror to
+ * R2 with rclone. Every step can be re-run: files that are already complete are skipped.
  *
  * Requirements:
  *   - Node.js 18 or newer and curl (download step)
- *   - rclone (upload and verify steps), e.g. `brew install rclone`. Wrangler is not used for
- *     uploads: it cannot list or check objects and uploads files only up to 300 MB.
- *   - An R2 bucket. Create it once with Wrangler (run through npx, no install needed):
- *       npx wrangler login
- *       npx wrangler r2 bucket create vqeg-meeting-files
- *   - An R2 API token with "Object Read & Write" access to the bucket. Create it in the
- *     Cloudflare dashboard under R2 > Manage API tokens. It shows the access key ID and the
- *     secret access key. The account ID is on the R2 overview page.
+ *   - rclone (upload, verify and links steps), e.g. `brew install rclone`. Wrangler is not used:
+ *     it cannot list or check objects and uploads files only up to 300 MB.
+ *   - An R2 API token with "Object Read & Write" access to the bucket ("Object Read only" is
+ *     enough for verify and links). Create it in the Cloudflare dashboard under
+ *     R2 > Manage API tokens. It shows the access key ID and the secret access key. The
+ *     account ID is on the R2 overview page.
  *
  * Steps:
- *   download  Download every linked file to ARCHIVE_DIR/files. Skip files whose local size
- *             matches the size on the old server. Write ARCHIVE_DIR/download-report.json with
- *             failed downloads, files missing on the old server, and broken links.
- *             With --local, skip files that exist locally without checking the old server.
+ *   download  Download every linked file from the old vqeg.org to ARCHIVE_DIR/files. Skip files
+ *             whose local size matches the size on the old server. Write
+ *             ARCHIVE_DIR/download-report.json with failed downloads and files missing on the
+ *             old server. With --local, skip files that exist locally without checking the old
+ *             server.
  *   upload    Copy ARCHIVE_DIR/files to the bucket with `rclone copy`. Skip files that are
- *             already in the bucket with the same checksum.
- *   verify    Compare size and MD5 of every local file with its copy in the bucket.
+ *             already in the bucket with the same checksum. The folder structure in
+ *             ARCHIVE_DIR/files is the key structure in the bucket, for example
+ *             files/meetings/2026_05_AGH_Poland/agenda.pdf. Files added to the folder by hand
+ *             are uploaded too.
+ *   verify    Compare size and MD5 of every file in ARCHIVE_DIR/files with its copy in the bucket.
+ *   links     List every archive: link in src/data/page that has no file in the bucket.
  *   all       Run download, upload and verify (default).
- *
- * Every step can be run again after an error or interruption. Partial downloads are resumed.
  *
  * Usage:
  *   node scripts/archive-to-r2.mjs download
@@ -38,25 +39,27 @@
  *   export R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=...
  *   node scripts/archive-to-r2.mjs upload
  *   node scripts/archive-to-r2.mjs verify
+ *   node scripts/archive-to-r2.mjs links
  *
  * Environment:
  *   ARCHIVE_DIR           Local mirror directory (default: ../vqeg-archive-mirror)
- *   R2_ACCOUNT_ID         Cloudflare account ID (upload and verify only)
- *   R2_ACCESS_KEY_ID      R2 API token access key ID (upload and verify only)
- *   R2_SECRET_ACCESS_KEY  R2 API token secret access key (upload and verify only)
+ *   R2_ACCOUNT_ID         Cloudflare account ID (upload, verify and links only)
+ *   R2_ACCESS_KEY_ID      R2 API token access key ID (upload, verify and links only)
+ *   R2_SECRET_ACCESS_KEY  R2 API token secret access key (upload, verify and links only)
  *   R2_BUCKET             R2 bucket name (default: vqeg-meeting-files)
  *
  * Object keys in R2: meetings/<directory>/<filename> and publications/<directory>/<filename>,
  * with the original directory and file names.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { archiveKey, archivePages, parseQuery } from '../src/remark/rewrite-archive-urls.mjs';
+import { archiveKey, archiveScheme } from '../src/remark/rewrite-archive-urls.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
+const pagesDir = join(root, 'src/data/page');
 const archiveDir = resolve(process.env.ARCHIVE_DIR ?? join(root, '../vqeg-archive-mirror'));
 const filesDir = join(archiveDir, 'files');
 const partsDir = join(archiveDir, 'parts');
@@ -65,38 +68,51 @@ const args = process.argv.slice(2);
 // Skip existing local files without checking their size on the old server
 const localOnly = args.includes('--local');
 
-// Source pages
-const sources = Object.keys(archivePages).map((name) => `src/data/page/${name}`);
-
 // Number of parallel downloads
 const concurrency = 4;
 
 // Body that the old server returns (with status 200) for a missing file
 const missingBody = 'File does not exist.';
 
-const linkPattern = /\]\((https:\/\/vqeg\.org\/umbraco\/surface\/FolderList\/GetFile\?.*)\) \([0-9.]+ MB\)$/;
+// Download URL and page ID on the old vqeg.org for each key prefix in R2
+const oldDownloadUrl = 'https://vqeg.org/umbraco/surface/FolderList/GetFile';
+const oldPageIds = { meetings: 1669, publications: 5448 };
 
-function readEntries() {
-  const entries = new Map();
-  const broken = [];
-  for (const page of sources) {
-    const prefix = archivePages[basename(page)];
-    for (const line of readFileSync(join(root, page), 'utf8').split('\n')) {
-      const match = line.match(linkPattern);
-      if (!match) continue;
-      const key = archiveKey(match[1], prefix);
-      if (!key) {
-        broken.push(match[1]);
-        continue;
-      }
-      const { directory, filename, pageId } = parseQuery(match[1]);
-      const url =
-        'https://vqeg.org/umbraco/surface/FolderList/GetFile' +
-        `?directory=${encodeURIComponent(directory)}&filename=${encodeURIComponent(filename)}&pageId=${pageId}&m=3`;
-      entries.set(key, { key, url });
+// Markdown link to an archive file
+const linkPattern = new RegExp(`\\]\\((${archiveScheme}[^\\s)]*(?:\\([^\\s)]*\\)[^\\s)]*)*)\\)`, 'g');
+
+/** Return the MDX files below a directory. */
+function pages(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return pages(path);
+    return entry.name.endsWith('.mdx') ? [path] : [];
+  });
+}
+
+/** Return the archive links on the website as a map from object key to page file. */
+function archiveLinks() {
+  const links = new Map();
+  for (const page of pages(pagesDir)) {
+    for (const match of readFileSync(page, 'utf8').matchAll(linkPattern)) {
+      links.set(archiveKey(match[1]), relative(root, page));
     }
   }
-  return { entries: [...entries.values()], broken };
+  return links;
+}
+
+/** Return the files on the old vqeg.org that the archive links point to. */
+function oldEntries() {
+  return [...archiveLinks().keys()].flatMap((key) => {
+    const [prefix, directory, ...rest] = key.split('/');
+    const pageId = oldPageIds[prefix];
+    if (!pageId || !directory || rest.length === 0) return [];
+    const filename = rest.join('/');
+    const url =
+      `${oldDownloadUrl}?directory=${encodeURIComponent(directory)}` +
+      `&filename=${encodeURIComponent(filename)}&pageId=${pageId}&m=3`;
+    return [{ key, url }];
+  });
 }
 
 function sizeOf(file) {
@@ -164,7 +180,7 @@ async function downloadOne(entry) {
 }
 
 async function download() {
-  const { entries, broken } = readEntries();
+  const entries = oldEntries();
   console.log(`${entries.length} files, mirror at ${archiveDir}`);
   const counts = { downloaded: 0, skipped: 0, missing: 0, failed: 0 };
   const missing = [];
@@ -190,16 +206,15 @@ async function download() {
   }
   await Promise.all(Array.from({ length: concurrency }, worker));
 
-  const report = { date: new Date().toISOString(), counts, broken, missing, failed };
+  const report = { date: new Date().toISOString(), counts, missing, failed };
   writeFileSync(join(archiveDir, 'download-report.json'), JSON.stringify(report, null, 2));
   console.log(counts);
-  for (const url of broken) console.log(`Broken link (no file name): ${url}`);
   for (const entry of missing) console.log(`Missing on old server: ${entry.key}`);
   console.log(`Report: ${join(archiveDir, 'download-report.json')}`);
   return counts.failed === 0;
 }
 
-function rclone(args) {
+function rclone(args, options = {}) {
   for (const name of ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY']) {
     if (!process.env[name]) throw new Error(`${name} is not set`);
   }
@@ -213,26 +228,42 @@ function rclone(args) {
     RCLONE_CONFIG_R2_ENDPOINT: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     RCLONE_CONFIG_R2_NO_CHECK_BUCKET: 'true',
   };
-  const result = spawnSync('rclone', args, { env, stdio: 'inherit' });
+  const result = spawnSync('rclone', args, { env, stdio: 'inherit', ...options });
   if (result.error?.code === 'ENOENT') throw new Error('rclone is not installed (brew install rclone)');
   if (result.error) throw result.error;
-  return result.status === 0;
+  return result;
 }
 
 function upload() {
-  return rclone(['copy', filesDir, `r2:${bucket}`, '--checksum', '--transfers', '8', '--retries', '5', '--progress']);
+  const args = ['copy', filesDir, `r2:${bucket}`, '--checksum', '--transfers', '8', '--retries', '5', '--progress'];
+  return rclone(args).status === 0;
 }
 
 function verify() {
   // Compare size and MD5 of every local file with its copy in R2
-  return rclone(['check', filesDir, `r2:${bucket}`, '--one-way']);
+  return rclone(['check', filesDir, `r2:${bucket}`, '--one-way']).status === 0;
 }
 
-const steps = { download, upload, verify };
+function links() {
+  const result = rclone(['lsf', `r2:${bucket}`, '--recursive', '--files-only'], {
+    stdio: ['ignore', 'pipe', 'inherit'],
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  if (result.status !== 0) return false;
+  const objects = new Set(result.stdout.split('\n').filter(Boolean));
+  const linked = archiveLinks();
+  const missing = [...linked].filter(([key]) => !objects.has(key));
+  console.log(`${linked.size} archive links, ${objects.size} files in the bucket`);
+  for (const [key, page] of missing) console.log(`Missing in the bucket: ${key} (${page})`);
+  return missing.length === 0;
+}
+
+const steps = { download, upload, verify, links };
 const command = args.find((arg) => !arg.startsWith('--')) ?? 'all';
-const selected = command === 'all' ? Object.keys(steps) : [command];
+const selected = command === 'all' ? ['download', 'upload', 'verify'] : [command];
 if (!selected.every((step) => step in steps)) {
-  console.error('Usage: node scripts/archive-to-r2.mjs [download|upload|verify|all] [--local]');
+  console.error('Usage: node scripts/archive-to-r2.mjs [download|upload|verify|links|all] [--local]');
   process.exit(2);
 }
 mkdirSync(filesDir, { recursive: true });
