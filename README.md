@@ -4,7 +4,7 @@ The Video Quality Experts Group (VQEG) website is a static Astro site. It was mi
 
 ## Requirements
 
-Use Node.js 22.22.3 or later. Install dependencies once from the repository root:
+Use Node.js 22.23.4 or later. Install dependencies once from the repository root:
 
 ```sh
 npm install

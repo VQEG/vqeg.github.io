@@ -45,8 +45,9 @@ const vision = [
       <a
         href={withBase('/projects')}
         class="mt-7 inline-block rounded bg-vqeg-blue-dark px-5 py-3 font-semibold text-white transition hover:bg-vqeg-blue"
-        >Explore VQEG projects</a
       >
+        Explore VQEG projects
+      </a>
     </div>
     <img
       src={withBase('/media/f1tnuugd/home-tripic.jpg')}
@@ -62,17 +63,17 @@ const vision = [
     <div class="mx-auto max-w-6xl px-5">
       <h2 class="vqeg-section-title">Who we work with</h2>
       <ul class="vqeg-work-list mt-5 text-lg font-semibold text-vqeg-blue">
-        <li>Industry</li><li>Academia</li><li>Government organizations</li><li>
-          International Telecommunication Union (ITU)
-        </li><li>Other standards-developing organizations</li>
+        <li>Industry</li>
+        <li>Academia</li>
+        <li>Government organizations</li>
+        <li>International Telecommunication Union (ITU)</li>
+        <li>Other standards-developing organizations</li>
       </ul>
     </div>
   </section>
 
   <section class="vqeg-home-meeting bg-vqeg-red py-12 text-white">
-    <div
-      class="relative mx-auto grid max-w-6xl gap-8 px-5 md:grid-cols-[9rem_minmax(0,0.7fr)_minmax(0,1.3fr)] md:items-center"
-    >
+    <div class="relative mx-auto grid max-w-6xl gap-8 px-5 md:grid-cols-[9rem_minmax(0,0.7fr)_minmax(0,1.3fr)] md:items-center">
       <div class="hidden justify-center md:flex">
         <img src={withBase('/media/ssanpki5/screen-icon.svg')} alt="Screen" class="w-28" />
       </div>
@@ -80,12 +81,20 @@ const vision = [
         <h2 class="text-2xl font-bold">Meeting venues</h2>
         <p class="mt-3">Meetings shift from country to country.</p>
         <ul class="mt-4 space-y-2 text-sm font-semibold">
-          <li><a href={withBase('/email-reflectors')} class="underline">Email reflectors</a></li>
-          <li><a href={withBase('/meetings')} class="underline">Open meetings</a></li>
           <li>
-            <a href="https://www.linkedin.com/company/vqeg-video-quality-experts-group/" class="underline"
-              >VQEG on LinkedIn</a
-            >
+            <a href={withBase('/email-reflectors')} class="underline">
+              Email reflectors
+            </a>
+          </li>
+          <li>
+            <a href={withBase('/meetings')} class="underline">
+              Open meetings
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/company/vqeg-video-quality-experts-group/" class="underline">
+              VQEG on LinkedIn
+            </a>
           </li>
         </ul>
       </div>
@@ -102,25 +111,23 @@ const vision = [
   <section class="mx-auto max-w-6xl px-5 py-16">
     <h2 class="vqeg-section-title">VQEG vision</h2>
     <div class="mt-8 grid gap-7 md:grid-cols-3">
-      {
-        vision.map((item) => (
-          <article class="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
-            <>
-              <img src={withBase(item.image)} alt="" class="h-44 w-full object-cover" />
-              <div class="p-6">
-                <>
-                  <h3 class="text-xl font-bold uppercase text-vqeg-blue">{item.title}</h3>
-                  <ul class="mt-4 list-disc space-y-2 pl-5 text-slate-700">
-                    {item.items.map((line) => (
-                      <li>{line}</li>
-                    ))}
-                  </ul>
-                </>
-              </div>
-            </>
-          </article>
-        ))
-      }
+      {vision.map((item) => (
+        <article class="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
+          <>
+            <img src={withBase(item.image)} alt="" class="h-44 w-full object-cover" />
+            <div class="p-6">
+              <>
+                <h3 class="text-xl font-bold uppercase text-vqeg-blue">{item.title}</h3>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-slate-700">
+                  {item.items.map((line) => (
+                    <li>{line}</li>
+                  ))}
+                </ul>
+              </>
+            </div>
+          </>
+        </article>
+      ))}
     </div>
   </section>
 
@@ -131,10 +138,12 @@ const vision = [
         The Video Quality Experts Group was first grounded in subjective methodology and objective tool development and
         verification for video quality assessment, helping move the industry forward through standardization and
         implementation.
-      </p><p>
+      </p>
+      <p>
         As multimedia has become pervasive across devices and distribution paths have expanded from broadcast to
         cellular networks, VQEG’s work has expanded from visual quality to Quality of Experience (QoE).
-      </p><p>
+      </p>
+      <p>
         VQEG advances methods and tools for new technologies by bringing qualitative and quantitative approaches
         together, enabling unprecedented collaboration and execution.
       </p>

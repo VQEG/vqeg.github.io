@@ -136,9 +136,21 @@ async function downloadOne(entry) {
   if (sizeOf(part) > expected) rmSync(part);
   const result = spawnSync(
     'curl',
-    ['--silent', '--show-error', '--fail', '--location', '--retry', '5', '--retry-all-errors',
-      '--continue-at', '-', '--output', part, entry.url],
-    { encoding: 'utf8' },
+    [
+      '--silent',
+      '--show-error',
+      '--fail',
+      '--location',
+      '--retry',
+      '5',
+      '--retry-all-errors',
+      '--continue-at',
+      '-',
+      '--output',
+      part,
+      entry.url,
+    ],
+    { encoding: 'utf8' }
   );
   if (result.status !== 0) throw new Error(`curl exited with ${result.status}: ${result.stderr.trim()}`);
   const actual = sizeOf(part);

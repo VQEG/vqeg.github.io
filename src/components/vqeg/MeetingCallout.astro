@@ -5,8 +5,12 @@ const asset = `${base}media/ssanpki5/screen-icon.svg`;
 
 <section class="vqeg-meeting-callout">
   <img src={asset} alt="Screen" />
-  <div class="venues"><slot name="venues" /></div>
-  <div class="details"><slot /></div>
+  <div class="venues">
+    <slot name="venues" />
+  </div>
+  <div class="details">
+    <slot />
+  </div>
 </section>
 
 <style>

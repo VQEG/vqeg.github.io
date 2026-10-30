@@ -25,44 +25,40 @@ const pathname = Astro.url.pathname.slice(base.length - 1).replace(/\/$/, '') ||
       </span>
     </a>
     <details class="relative lg:hidden">
-      <summary class="cursor-pointer rounded border border-white/70 px-3 py-2 text-sm font-semibold text-white"
-        >Menu</summary
-      >
+      <summary class="cursor-pointer rounded border border-white/70 px-3 py-2 text-sm font-semibold text-white">
+        Menu
+      </summary>
       <nav
         class="absolute right-0 z-20 mt-2 w-72 rounded bg-white p-3 text-slate-800 shadow-xl"
         aria-label="Main navigation"
       >
         <ul class="space-y-1">
-          {
-            links.map((link) => (
-              <li>
-                <a class="block rounded px-3 py-2 hover:bg-slate-100" href={withBase(link.href)}>
-                  {link.label}
-                </a>
-              </li>
-            ))
-          }
+          {links.map((link) => (
+            <li>
+              <a class="block rounded px-3 py-2 hover:bg-slate-100" href={withBase(link.href)}>
+                {link.label}
+              </a>
+            </li>
+          ))}
         </ul>
       </nav>
     </details>
   </div>
   <nav class="hidden border-t border-white/30 bg-vqeg-blue-dark lg:block" aria-label="Main navigation">
     <ul class="mx-auto flex max-w-6xl items-stretch px-5">
-      {
-        links.map((link) => (
-          <li>
-            <a
-              class:list={[
-                'block px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/15',
-                { 'bg-vqeg-red': pathname === link.href },
-              ]}
-              href={withBase(link.href)}
-            >
-              {link.label}
-            </a>
-          </li>
-        ))
-      }
+      {links.map((link) => (
+        <li>
+          <a
+            class:list={[
+              'block px-3 py-3 text-sm font-semibold text-white transition hover:bg-white/15',
+              { 'bg-vqeg-red': pathname === link.href },
+            ]}
+            href={withBase(link.href)}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
     </ul>
   </nav>
 </header>

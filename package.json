@@ -4,7 +4,7 @@
   "description": "VQEG public website, built with Astro and MDX.",
   "type": "module",
   "engines": {
-    "node": ">=22.22.3"
+    "node": ">=22.23.4"
   },
   "scripts": {
     "dev": "astro dev",
@@ -21,39 +21,40 @@
     "fix:prettier": "prettier -w ."
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.2.4",
-    "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.2.9"
+    "@astrojs/markdown-remark": "^7.3.5",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.4.4"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/check": "^0.9.12",
+    "@astrojs/mdx": "^8.1.2",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/mdx": "^2.0.14",
-    "@typescript-eslint/eslint-plugin": "^8.66.0",
-    "@typescript-eslint/parser": "^8.66.0",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
     "astro-compress": "^2.4.3",
-    "astro-eslint-parser": "^3.0.0",
-    "eslint": "^10.8.1",
-    "eslint-plugin-astro": "^3.1.0",
-    "globals": "^17.9.0",
-    "prettier": "^3.9.6",
-    "prettier-plugin-astro": "^0.14.1",
-    "sharp": "^0.35.3",
+    "astro-eslint-parser": "^3.2.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.2",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
   },
   "overrides": {
     "yaml": ">=2.8.3",
     "astro-compress": {
-      "sharp": "^0.35.3",
-      "svgo": "^4.0.2"
+      "sharp": "$sharp",
+      "svgo": "^4.1.0"
     },
     "postcss": {
-      "nanoid": "^3.3.18"
-    }
+      "nanoid": "^3.3.20"
+    },
+    "deepmerge-ts": "^8.0.2"
   },
   "allowScripts": {
     "esbuild": true
