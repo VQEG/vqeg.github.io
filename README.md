@@ -1,10 +1,68 @@
 # VQEG Website
 
-The Video Quality Experts Group (VQEG) website is a static Astro site. It was migrated from the archived vqeg.org crawl and uses MDX so that public content can be maintained without changing page code.
+This repository holds the website of the Video Quality Experts Group (VQEG). It is a static site built with [Astro](https://astro.build). The pages are MDX files: Markdown with optional components. GitHub Actions builds the site and publishes it on GitHub Pages.
+
+The site was migrated from the old vqeg.org (Umbraco) at NTIA/ITS. The meeting and publication files were moved to a Cloudflare R2 bucket.
+
+## How the site is built
+
+Every page is an MDX file in `src/data/page/`. The file path is the URL. For example, `src/data/page/projects/qah.mdx` becomes `/projects/qah`.
+
+When Astro builds the site, it runs three steps on the Markdown of every page. They are in `src/remark/`:
+
+- `archive-accordions.mjs` turns each level-3 heading with a bulleted list below it into a collapsed section. This only happens on the Meetings and the Publications and Software pages.
+- `rewrite-archive-urls.mjs` turns archive links into links to the R2 bucket (see below).
+- `rewrite-root-urls.mjs` adds `BASE_PATH` to links that start with `/`, in case the site is published below a sub-path.
+
+Page layouts and components are in `src/layouts/` and `src/components/`. Images and small downloads are in `public/media/`.
+
+## Editing content
+
+See [CONTENT-EDITING.md](CONTENT-EDITING.md) for the editor guide. In short:
+
+- Edit the MDX files in `src/data/page/` in any text editor, or on GitHub in the browser.
+- Each push to `master` rebuilds and publishes the site within a few minutes.
+- Keep the `source` line in the frontmatter unchanged. It names the page of the old site that the file came from.
+
+The page editor at `/decapcms/` does not work at the moment. It uses Netlify for login, and the site is no longer hosted there. It will be replaced with Sveltia CMS, which works with a GitHub login.
+
+## Meeting and publication files
+
+The meeting and publication files (about 2,400 files, 6.2 GB) are not in this repository. They are in the Cloudflare R2 bucket `vqeg-meeting-files` of the VQEG Cloudflare account, with these keys:
+
+- `meetings/<meeting folder>/<file name>`, for example `meetings/2025_05_Meta_USA/agenda.pdf`
+- `publications/<folder>/<file name>`
+
+Pages link to these files with `archive:` links:
+
+```md
+- [agenda.pdf](archive:meetings/2025_05_Meta_USA/agenda.pdf) (0.2 MB)
+```
+
+During the build, each `archive:` link becomes a link to the public URL of the bucket, set by `ARCHIVE_URL`. So the HTML has links such as `https://pub-….r2.dev/meetings/2025_05_Meta_USA/agenda.pdf`, while the MDX file only has the key. To move the archive to another address, such as `archive.vqeg.org`, change `ARCHIVE_URL` and rebuild; the pages stay as they are.
+
+Write spaces in file names as `%20`, and parentheses as `%28` and `%29`. The build decodes these.
+
+Until October 2026, the pages linked to the old download URLs of vqeg.org (`/umbraco/surface/FolderList/GetFile?directory=…&filename=…&pageId=…`). Then all links were changed to `archive:` links. The old URL of a file can still be built from its key: the directory and file name are the same, and the page ID is 1669 for meetings and 5448 for publications. Two files were already missing on the old server. They are listed without a link and marked "file not available".
+
+### Adding files to the archive
+
+At the moment, files go into the bucket by hand:
+
+- For a few files, upload them on the R2 page of the Cloudflare dashboard. This needs a login to the VQEG Cloudflare account.
+- For many files, use [scripts/archive-to-r2.mjs](scripts/archive-to-r2.mjs). Put the files in a local folder with the same structure as the bucket and run the `upload` step. The comment at the top of the script describes the setup.
+
+The script has more steps:
+
+- `download` gets every linked file from the old vqeg.org into the local folder, as long as the old server is online.
+- `verify` compares the local folder with the bucket.
+- `links` lists all `archive:` links without a file in the bucket.
+
+Then add the links to the page by hand. A simpler way, with an upload page and file lists generated from the bucket, is planned.
 
 ## Requirements
 
-Use Node.js 22.23.4 or later. Install dependencies once from the repository root:
+Use Node.js 22.23.4 or later. Install the dependencies once:
 
 ```sh
 npm install
@@ -18,51 +76,34 @@ Start the development server in the background:
 npx astro dev --background
 ```
 
-The site is available at http://localhost:4321. Manage the background server with these commands:
+The site is then at http://localhost:4321. Manage the server with these commands:
 
 - `npx astro dev status`
 - `npx astro dev logs`
 - `npx astro dev stop`
 
-Run the quality checks and production build before publishing:
+Before publishing, run the checks and a production build:
 
 ```sh
 npm run check
 npm run build
 ```
 
-The generated static site is in `dist/`.
-
-## Editing content
-
-Every public VQEG page and project is an MDX file in `src/data/page/`. A file path becomes its URL. For example, `src/data/page/projects/qah.mdx` is published at `/projects/qah`.
-
-The MDX frontmatter contains a page title and an optional archive reference. Edit the title and body using Decap CMS at `/decapcms/` or in a Markdown editor. Keep `source` unchanged because it identifies the archived page used for the migration.
-
-See [CONTENT-EDITING.md](CONTENT-EDITING.md) for the short editor guide and a new-page example.
-
-## Media and meeting files
-
-Public images and legacy downloads needed by the migrated pages are in `public/media/`. Use paths such as `/media/folder/file.jpg` in MDX.
-These files are small and can be kept inside Git.
-
-The multi-gigabyte meeting archive (5.7 GB as of September 2026) is intentionally excluded. Put meeting files in the designated external storage and link to them from the appropriate meeting page; do not commit that archive here.
-
-[scripts/archive-to-r2.mjs](scripts/archive-to-r2.mjs) copies the meeting and publication files linked on the site from the old vqeg.org to Cloudflare R2. See the comment at the top of the script for requirements and usage.
+The built site is in `dist/`.
 
 ## Deployment
 
-This repository is the organization Pages site of the [VQEG GitHub organization](https://github.com/VQEG). GitHub Pages publishes the `master` branch through [the deployment workflow](.github/workflows/deploy.yml) at `https://vqeg.github.io/`.
+This repository is the organization Pages site of the [VQEG GitHub organization](https://github.com/VQEG). [The deployment workflow](.github/workflows/deploy.yml) builds the `master` branch and publishes it at `https://vqeg.github.io/`.
 
-The deployment location is configured with GitHub repository variables, not source code:
+GitHub repository variables set where the site is published:
 
-- `SITE_URL`: site origin, currently `https://vqeg.github.io`, later `https://vqeg.org`
-- `BASE_PATH`: optional path below the origin; leave it unset for a root-domain deployment
-- `ARCHIVE_URL`: public base URL of the R2 bucket with the meeting and publication files, such as `https://archive.vqeg.org`; defaults to the r2.dev development URL
+- `SITE_URL`: origin of the site, now `https://vqeg.github.io`, later `https://vqeg.org`
+- `BASE_PATH`: optional path below the origin. Leave it unset when the site is at the root of the domain.
+- `ARCHIVE_URL`: public URL of the R2 bucket, later `https://archive.vqeg.org`. Without it, the build uses the r2.dev development URL of the bucket.
 
-Use the same variables when building elsewhere. Without them, local development runs at the root of `http://localhost:4321`.
+Use the same variables to build elsewhere. Without them, the site runs at the root of `http://localhost:4321`.
 
-The project sites of other VQEG repositories, such as `/software-tools/`, `/doi/` and `/number-of-subjects/`, are served under the same domain. Do not create pages at these paths, and link to them with root-relative URLs. They do not exist on the local development server.
+Other VQEG repositories publish their project sites under the same domain, for example `/software-tools/`, `/doi/` and `/number-of-subjects/`. Do not create pages at these paths. Link to them with URLs that start with `/`. They do not exist on the local development server.
 
 ### Switching to vqeg.org
 
@@ -74,3 +115,5 @@ The domain `vqeg.org` is verified for the VQEG organization in the [organization
 4. Enable "Enforce HTTPS" once GitHub has issued the certificate.
 
 After the switch, the `vqeg.github.io` URLs, including those of the project sites, redirect to `vqeg.org`.
+
+Old download links to `vqeg.org/umbraco/surface/FolderList/GetFile?directory=…&filename=…` from other sites will stop working after the switch, because GitHub Pages ignores query strings. Once the DNS of vqeg.org is in the VQEG Cloudflare account, a Cloudflare redirect rule can send them to `archive.vqeg.org/meetings/<directory>/<filename>`.
