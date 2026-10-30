@@ -68,7 +68,7 @@ The project sites of other VQEG repositories, such as `/software-tools/`, `/doi/
 
 The domain `vqeg.org` is verified for the VQEG organization in the [organization Pages settings](https://github.com/organizations/VQEG/settings/pages). To switch the site to `vqeg.org`:
 
-1. Point the DNS records to GitHub Pages: `A` records for `vqeg.org` to `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`, `AAAA` records to `2606:50c0:8000::153` to `2606:50c0:8003::153`, and a `CNAME` record for `www.vqeg.org` to `vqeg.github.io`. The records must not be proxied.
+1. Point the DNS records to GitHub Pages: `A` records for `vqeg.org` to `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`, `AAAA` records to `2606:50c0:8000::153` to `2606:50c0:8003::153`, and a `CNAME` record for `www.vqeg.org` to either `vqeg.github.io` (recommended by GitHub) or `vqeg.org` (the current record, which also works). The records must not be proxied.
 2. Set `vqeg.org` as the custom domain in the [repository Pages settings](https://github.com/VQEG/vqeg.github.io/settings/pages). Do not add a `public/CNAME` file; the deployment workflow does not use it.
 3. Set the `SITE_URL` variable to `https://vqeg.org` and run the deployment workflow again.
 4. Enable "Enforce HTTPS" once GitHub has issued the certificate.
