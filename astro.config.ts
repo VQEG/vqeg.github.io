@@ -1,3 +1,4 @@
+import { hostname } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +24,10 @@ export default defineConfig({
   site,
   base,
   output: 'static',
+  server: {
+    host: true,
+    allowedHosts: [hostname()],
+  },
   markdown: {
     processor: unified({
       remarkPlugins: [

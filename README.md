@@ -100,6 +100,7 @@ GitHub repository variables set where the site is published:
 - `SITE_URL`: origin of the site, now `https://vqeg.github.io`, later `https://vqeg.org`
 - `BASE_PATH`: optional path below the origin. Leave it unset when the site is at the root of the domain.
 - `ARCHIVE_URL`: public URL of the R2 bucket, later `https://archive.vqeg.org`. Without it, the build uses the r2.dev development URL of the bucket.
+- `PREVIEW_REDIRECT_URL`: while the site is only a preview, set it to `https://vqeg.org/`. Every page then shows a notice that the site is a preview and redirects to this URL after five seconds, unless the visitor chooses to stay (remembered for the browser session). The pages also get `noindex`. The notice does nothing on the host of the URL itself. Delete the variable on the day of the switch.
 
 Use the same variables to build elsewhere. Without them, the site runs at the root of `http://localhost:4321`.
 
@@ -111,7 +112,7 @@ The domain `vqeg.org` is verified for the VQEG organization in the [organization
 
 1. Point the DNS records to GitHub Pages: `A` records for `vqeg.org` to `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`, `AAAA` records to `2606:50c0:8000::153` to `2606:50c0:8003::153`, and a `CNAME` record for `www.vqeg.org` to either `vqeg.github.io` (recommended by GitHub) or `vqeg.org` (the current record, which also works). The records must not be proxied.
 2. Set `vqeg.org` as the custom domain in the [repository Pages settings](https://github.com/VQEG/vqeg.github.io/settings/pages). Do not add a `public/CNAME` file; the deployment workflow does not use it.
-3. Set the `SITE_URL` variable to `https://vqeg.org` and run the deployment workflow again.
+3. Set the `SITE_URL` variable to `https://vqeg.org`, delete the `PREVIEW_REDIRECT_URL` variable, and run the deployment workflow again.
 4. Enable "Enforce HTTPS" once GitHub has issued the certificate.
 
 After the switch, the `vqeg.github.io` URLs, including those of the project sites, redirect to `vqeg.org`.

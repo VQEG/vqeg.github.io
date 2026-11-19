@@ -14,6 +14,7 @@ env:
   SITE_URL: ${{ vars.SITE_URL }}
   BASE_PATH: ${{ vars.BASE_PATH }}
   ARCHIVE_URL: ${{ vars.ARCHIVE_URL }}
+  PREVIEW_REDIRECT_URL: ${{ vars.PREVIEW_REDIRECT_URL }}
 
 concurrency:
   group: pages

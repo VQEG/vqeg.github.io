@@ -1,0 +1,87 @@
+---
+// Shown while the site is only a preview at vqeg.github.io and vqeg.org still
+// serves the old site. Enabled by the PREVIEW_REDIRECT_URL build variable.
+const target = process.env.PREVIEW_REDIRECT_URL;
+const seconds = 5;
+---
+
+{target && (
+  <dialog
+    id="preview-notice"
+    data-target={target}
+    data-seconds={seconds}
+    aria-labelledby="preview-notice-title"
+    class="m-auto w-[calc(100%-2rem)] max-w-md rounded-lg border-t-4 border-[#d63e04] bg-white p-6 text-slate-800 shadow-2xl backdrop:bg-slate-900/60"
+  >
+    <h2 id="preview-notice-title" class="text-[#003366] mb-3 text-xl font-bold">
+      Preview of the new VQEG website
+    </h2>
+    <p class="mb-3 leading-relaxed">
+      This page is a preview and may change without notice. The official VQEG website is{' '}
+      <a href={target} class="text-[#003366] font-semibold underline">
+        {new URL(target).host}
+      </a>
+      .
+    </p>
+    <p class="mb-5 leading-relaxed" aria-live="polite">
+      Redirecting in <strong id="preview-notice-count">{seconds}</strong> seconds…
+    </p>
+    <div class="flex flex-wrap justify-end gap-3">
+      <button
+        type="button"
+        id="preview-notice-stay"
+        class="rounded border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-100"
+      >
+        Stay on preview
+      </button>
+      <a href={target} autofocus class="bg-[#003366] rounded px-4 py-2 font-semibold text-white hover:opacity-90">
+        Go to {new URL(target).host} now
+      </a>
+    </div>
+  </dialog>
+)}
+
+<script>
+  const dialog = document.getElementById('preview-notice') as HTMLDialogElement | null;
+  const key = 'vqeg-preview-stay';
+
+  const stayed = () => {
+    try {
+      return sessionStorage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  };
+
+  if (dialog?.dataset.target) {
+    const target = dialog.dataset.target;
+    // Do nothing on the target host itself, e.g. after the switch to vqeg.org.
+    if (location.hostname !== new URL(target).hostname && !stayed()) {
+      const count = document.getElementById('preview-notice-count');
+      let left = Number(dialog.dataset.seconds) || 5;
+
+      const stay = () => {
+        clearInterval(timer);
+        try {
+          sessionStorage.setItem(key, '1');
+        } catch {
+          // Storage unavailable: the notice shows again on the next page.
+        }
+        dialog.close();
+      };
+
+      const timer = setInterval(() => {
+        left -= 1;
+        if (count) count.textContent = String(left);
+        if (left <= 0) {
+          clearInterval(timer);
+          location.href = target;
+        }
+      }, 1000);
+
+      document.getElementById('preview-notice-stay')?.addEventListener('click', stay);
+      dialog.addEventListener('cancel', stay);
+      dialog.showModal();
+    }
+  }
+</script>
